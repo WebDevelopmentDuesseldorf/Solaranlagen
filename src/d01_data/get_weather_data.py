@@ -7,12 +7,13 @@ import datetime as dt
 # func: request weather data from API: get_weather_data
 def get_weather_data(source='meteomatics',location='thueringen'):
     '''
-    make request to a weather API, returns weather data in dataframe
+    make request to a weather API, returns weather data in dataframe,
+    df contains location, time & date and parameter with value
     :param source: which API to use, only meteomatics is supported
     :param location: which location to use, available locations will be saved in /references/loc_dict.json
     '''
     
-    # load location dict with test locations, will be implemented later: loc_dict
+    # load location dict with test locations, full fuctionality will be implemented later: loc_dict
     loc_dict = {
         'garmisch':'47.4938417,11.0829',
         'thueringen':'51.6492842,9.8767193_50.2043467,12.6539178:2x3'
