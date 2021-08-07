@@ -28,7 +28,8 @@ def update_id_block_df(df,
                     block_value,
                     block_reason, 
                     id_col = 'id_tuple',
-                    block_col = 'value'
+                    block_col = 'value',
+                    insights = True
                     ):
     '''
     returns updated block_df with id, block status and reason
@@ -37,7 +38,8 @@ def update_id_block_df(df,
     :param block_col: column to be checked
     :param block_direction: how to compare cell value to block value, sets what will be blocked, available settings (equal_to, different_from, less_than, greater_than, less_eq, greater_eq
     :param block_value: cell value will be compared to this
-    :param block_reason: reason to be stated if an id is blocked'''
+    :param block_reason: reason to be stated if an id is blocked
+    :param insights: if True returns extended block reason'''
     
     # load dict with comparison methods, dict might be expanded, loading of dict not yet implemented
     comp_dict = {
@@ -55,8 +57,13 @@ def update_id_block_df(df,
     block_df_additions = block_df_additions[[id_col,block_col]]
     # add block status and reason
     block_df_additions['blocked'] = True
-    block_df_additions['block reason'] = (block_reason + ' (' + block_col + ' is ' + block_direction + ' '+ str(block_value) +')')
     
+    # if requestes return extended reason for blocking
+    if insights:
+        block_df_additions['block reason'] = (block_reason + ' (' + block_col + ' is ' + block_direction + ' '+ str(block_value) +')')
+    else:
+        block_df_additions['block reason'] = block_reason
+
     # update current block_df
     block_df_updated = block_df_current.append(block_df_additions[[id_col,'blocked','block reason']])
     return block_df_updated
