@@ -36,29 +36,31 @@ def update_id_block_df(df,
     :param df: dataframe with data to check for blocking
     :param block_df_current: dataframe with columns for id, block status and reason
     :param block_col: column to be checked
-    :param block_direction: how to compare cell value to block value, sets what will be blocked, available settings (equal_to, different_from, less_than, greater_than, less_eq, greater_eq
+    :param block_direction: how to compare cell value to block value, sets what will be blocked, available settings: equal to, different from, less than, greater than, less eq, greater eq
     :param block_value: cell value will be compared to this
     :param block_reason: reason to be stated if an id is blocked
     :param insights: if True returns extended block reason'''
     
     # load dict with comparison methods, dict might be expanded, loading of dict not yet implemented
     comp_dict = {
-        'equal_to':(lambda cell, blockval: cell ==blockval),
-        'greater_than':(lambda cell, blockval: cell>blockval),
-        'greater_eq':(lambda cell, blockval: cell >=blockval),
-        'less_than':(lambda cell, blockval: cell<blockval),
-        'less_eq':(lambda cell, blockval: cell<=blockval),
-        'different_from':(lambda cell, blockval: cell != blockval)
+        'equal to':(lambda cell, blockval: cell ==blockval),
+        'greater than':(lambda cell, blockval: cell>blockval),
+        'greater eq':(lambda cell, blockval: cell >=blockval),
+        'less than':(lambda cell, blockval: cell<blockval),
+        'less eq':(lambda cell, blockval: cell<=blockval),
+        'different from':(lambda cell, blockval: cell != blockval)
         }
     
+    # get subset that is not already blocked: to_check_df
+    to_check_df = df[df['id_tuple'].isin(block_df_current['id_tuple'])==False]
     # get subset of dataframe to block
-    block_df_additions = df[comp_dict[block_direction](df[block_col],block_value)==True]
+    block_df_additions = to_check_df[comp_dict[block_direction](to_check_df[block_col],block_value)==True]
     # drop unnecessary columns
     block_df_additions = block_df_additions[[id_col,block_col]]
     # add block status and reason
     block_df_additions['blocked'] = True
     
-    # if requestes return extended reason for blocking
+    # if requested return extended reason for blocking
     if insights:
         block_df_additions['block reason'] = (block_reason + ' (' + block_col + ' is ' + block_direction + ' '+ str(block_value) +')')
     else:
