@@ -1,14 +1,17 @@
 import requests
 import pandas as pd
+from requests.api import get
 import d00_utils.get_strings as getstr
 import datetime as dt
+from os.path import dirname, abspath, normpath
+import os
 
 
 # func: request weather data from API: get_weather_data
 def get_weather_data(source='meteomatics',location='thueringen'):
     '''
     make request to a weather API, returns weather data in dataframe,
-    df contains location, time & date and parameter with value
+    df contains location, time, date and parameter with value
     :param source: which API to use, only meteomatics is supported
     :param location: which location to use, available locations will be saved in /references/loc_dict.json
     '''
@@ -24,9 +27,9 @@ def get_weather_data(source='meteomatics',location='thueringen'):
     
     # load authentication data
     if use == 'meteomatics':
-        with open('conf/base/meteomatics_auth.txt', 'r') as f:
+        auth_path = 'C:/Users/sonny/Documents/Data Science/TechLabs Project/conf/base/meteomatics_auth.txt'
+        with open(auth_path, 'r') as f:
             auth = f.read()
-            print(auth)
 
     # check the source to request data
     if source == 'meteomatics':
@@ -37,7 +40,6 @@ def get_weather_data(source='meteomatics',location='thueringen'):
         format_str = 'json?model=mix'
         # combine parts for full url: req_url
         req_url = 'https://'+auth+'@api.meteomatics.com'+'/'+date_str+'/'+param_str+'/'+latlong_str+'/'+format_str
-        print('========='+req_url)
         # send the request
         res = requests.get(req_url)    
         # begin to format/unpack result and put into dataframe: packed_weather_data_df
@@ -63,7 +65,6 @@ def get_weather_data(source='meteomatics',location='thueringen'):
         # standard id row will get dropped in the future
        
         packed_weather_data_df['id_tuple'] = packed_weather_data_df.apply(lambda x: (x.lat, x.lon), axis=1)
-        print(packed_weather_data_df)
 
         # fully unpack weather data into df: weather_data_df
         # list of parameters to be included in the final dataframe, use all columns besides dates, dates column will be unpacked in following code
@@ -78,13 +79,15 @@ def get_weather_data(source='meteomatics',location='thueringen'):
         # reorder the columns for better readability
         col_order = ['date','parameter','value','lat','lon','id_tuple','id']
         weather_data_df = weather_data_df[col_order]
-        print(weather_data_df.head())
 
         # change the type of the values in date column to datetime for better querying
         if not isinstance(weather_data_df.date.dtype, dt.datetime):
             # use meteodate2dt function to change the dtype of the date column
             # weather_data_df.date = weather_data_df.date.map(lambda x: dt.datetime.fromisoformat(x.replace('T',' ').replace('Z','')))weather_data_df.date = weather_data_df.date.map(lambda x: dt.datetime.fromisoformat(x.replace('T',' ').replace('Z','')))
             weather_data_df.date = weather_data_df.date.map(lambda x: meteodate2dt(x))
+            # change time data so the time zone is CEST (summer time in germany)
+            if source  == 'meteomatics':
+                weather_data_df['date'] += dt.timedelta(hours=2)
 
     else:
         print("other sources for weather are not supported, update get_weather_data.py first")

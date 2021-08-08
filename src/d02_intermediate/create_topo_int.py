@@ -80,8 +80,8 @@ def carpet_characterics(carpet_res):
     lat_max = carpet_bounds.get('ne')[0]
     lon_max = carpet_bounds.get('ne')[1]
     # approximate distance in compass directions in meters for carpet borders (formula "Verbesserte Methode" from: https://www.kompf.de/gps/distcalc.html)
-    ns_extension = 111.3 * (lat_max-lat_min)*1000
-    ew_extension = 111.3 * math.cos(math.radians((lat_max+lat_min)/2)) * (lon_max-lon_min)*1000
+    ns_extension = 111.12 * (lat_max-lat_min)*1000
+    ew_extension = 111.12 * math.cos(math.radians((lat_max+lat_min)/2)) * (lon_max-lon_min)*1000
     # calc distance between data points: ns_stepsize, ew_stepsize
     ### step_n could also be calculated with coordinate extension & degree_delta
     # save elevation data points in carpet: carpet_data
@@ -105,9 +105,7 @@ def elevation_std(carpet_df):
     for column in carpet_df.columns:
         elevation_list.append(carpet_df[column].tolist())
     # calculate std for elevation
-    print(elevation_list)
     ele_std = np.std(elevation_list)
-    print(ele_std)
     return ele_std
 
 def southern_elevation(elevation_path, ns_stepsize):

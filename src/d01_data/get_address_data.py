@@ -16,7 +16,6 @@ def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
     # define params for request
     # construct request url
     geo_url = geo_url_base+'lat='+str(lat)+'&lon='+str(lon)
-    print(geo_url)
     # make request
     res = requests.get(geo_url)
     # get address data
@@ -33,6 +32,7 @@ def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
             if address_data['city'] == 'unknown':
                 address_data['city'] = locator_address.get('town','unknown')
                 if address_data['city'] == 'unknown':
+                    print(geo_url)
                     address_data['city'] = locator_address.get('municipality','unknown')
         else:
             # set all address values to NaN
@@ -43,11 +43,11 @@ def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
         address_data['country code'] = NaN
     return address_data
 
-def get_address_data(tuple_list, ger_only=True):
+def get_address_data(tuple_list, ger_only=False):
     '''
     returns address data for multiple locations, return includes id_tuples
     :param tuple_list: list of coordinate tuples, must start with latitude
-    :param ger_only: if true only addresses in germany are included
+    :param ger_only: if true only addresses in germany are included, pls don't set True, setting is not fully implemented
     '''
     # drop duplicates in tuple list
     tuple_list = list(set(tuple_list))
@@ -60,7 +60,6 @@ def get_address_data(tuple_list, ger_only=True):
         address_data_list.append(address_dict)
     # turn list with data into dataframe: address_data_df
     address_data_df = pd.DataFrame(address_data_list)
-    print(address_data_df)
     # drop addresses outside of germany if requested
     if ger_only:
         address_data_df = address_data_df[address_data_df['country code']=='de']
