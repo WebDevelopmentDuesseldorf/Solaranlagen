@@ -24,21 +24,31 @@ def elevation_carpet(lat, lon):
     carpet_res = requests.get(carpet_url).json().get('data')
     return carpet_res
 
-def elevation_path(lat, lon):
+def elevation_path(lat, lon, direction):
     '''
-    returns list of elevation data from lat, lon to south, distance between data points ~30m
+    returns list of elevation data in a straight line from lat, lon, distance between data points ~30m
+    :param direction: in which direction to look from the latlon
     '''
     # set degree delta for best resolution (found in airmaps documentation)
     degree_delta = float(0.000277778)
-    # turn given lat into float
+    # turn given lat & lon into float
     loc_lat = float(lat)
+    loc_lon = float(lon)
     # set url bases
     carpet_url_base = 'https://api.airmap.com/elevation/v1/ele/path?points='
+    
+    # create dict to reference the formulas for the correct end point of the path
+    end_dict = {
+        'east':str(lat) + ',' + str(loc_lon+100*degree_delta),
+        'south':str(loc_lat-100*degree_delta) +',' + str(lon),
+        'west':str(lat) + ',' + str(loc_lon-100*degree_delta)}
+    # create start and end point for the path
     # create corner points for surrounding area
     start_lat = str(loc_lat)
-    end_lat = str(loc_lat-100*degree_delta)
+    start_lon = (str(loc_lon))
+    end_pt = end_dict[direction]
     # create URL for surrounding area: carpet_url
-    path_url = carpet_url_base + start_lat+','+str(lon)+','+end_lat+','+str(lon)
+    path_url = carpet_url_base + start_lat+','+start_lon+','+end_pt
     # requests carpet data, save as carpet_res
     path_res = requests.get(path_url).json().get('data')[0]
     return path_res
