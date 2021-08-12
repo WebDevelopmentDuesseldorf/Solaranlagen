@@ -50,6 +50,9 @@ def create_polygons(df, id_in_tuple=True, id_col='index', name_for_col='geometry
     ew_deg = lon_unique[1]-lon_unique[0]
     # create polygons
     df_with_polygons = df
-    df_with_polygons[name_for_col] = df_with_polygons.apply(lambda x: polygonize(x.name[0],x.name[1],ns_deg,ew_deg),axis=1)
+    print(df_with_polygons)
+    if id_col == 'index':
+        df_with_polygons[name_for_col] = df_with_polygons.apply(lambda x: polygonize(x.name[0],x.name[1],ns_deg,ew_deg),axis=1)
+    else:
+        df_with_polygons[name_for_col] = df_with_polygons.apply(lambda x: polygonize(x[id_col][0],x[id_col][1],ns_deg,ew_deg),axis=1)
     return df_with_polygons
-
