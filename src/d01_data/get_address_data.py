@@ -1,8 +1,11 @@
 from numpy import nan
+import numpy as np
 import requests
 from numpy.core.numeric import NaN
 import pandas as pd
 import math
+from itertools import product
+from d03_processing.create_geometries import create_polygons
 
 def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
     '''
@@ -32,7 +35,6 @@ def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
             if address_data['city'] == 'unknown':
                 address_data['city'] = locator_address.get('town','unknown')
                 if address_data['city'] == 'unknown':
-                    print(geo_url)
                     address_data['city'] = locator_address.get('municipality','unknown')
         else:
             # set all address values to NaN
@@ -64,3 +66,33 @@ def get_address_data(tuple_list, ger_only=False):
     if ger_only:
         address_data_df = address_data_df[address_data_df['country code']=='de']
     return address_data_df
+
+def get_address_grid(lat_min, lat_max,lon_min,lon_max,optimal_res=2000):
+    '''
+    returns a geodataframe with locations, polygons around them and the coutry code of the locations
+    :param optimal_res: optimal number of polygons
+    '''
+    # create a fitting width and height of the grid
+    # calculate range of latitude and longitude
+    lat_delta = lat_max-lat_min
+    lon_delta = lon_max-lon_min
+    # get the total area in degrees²
+    degree_res = lat_delta*lon_delta
+    # calculate the length of a polygon side in degrees
+    poly_size = (degree_res/optimal_res)**.5
+    # calculate the number of poly next to and above each other
+    poly_ontop_n = lat_delta/poly_size
+    poly_sidebyside_n = lon_delta/poly_size
+    
+    # create polygons
+    # create list of latlon values for the lower left point of the polygon
+    lat_list = list(np.arange(lat_min+.5*poly_size,lat_max+.5*poly_size,poly_size))
+    lon_list = list(np.arange(lon_min+.5*poly_size,lon_max+.5*poly_size,poly_size))
+    # combine all possible latlon combinations into tuples
+    center_list = list(product(*[lat_list,lon_list]))
+    # get address data for each center
+    center_address_df = get_address_data(center_list)
+
+    # create a geometry column with polygons corresponding to the area around the location
+    center_address_df = create_polygons(center_address_df, id_col='id_tuple')
+    return center_address_df
