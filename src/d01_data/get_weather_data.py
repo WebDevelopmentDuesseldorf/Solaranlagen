@@ -5,6 +5,7 @@ import d00_utils.get_strings as getstr
 import datetime as dt
 from os.path import dirname, abspath, normpath
 import os
+import math
 
 
 # func: request weather data from API: get_weather_data
@@ -19,7 +20,7 @@ def get_weather_data(source='meteomatics',location='thueringen'):
     # load location dict with test locations, full fuctionality will be implemented later: loc_dict
     loc_dict = {
         'garmisch':'47.4938417,11.0829',
-        'thueringen':'51.6492842,9.8767193_50.2043467,12.6539178:2x3'
+        'thueringen':'51.6492842,9.8767193_50.2043467,12.6539178:6x4'
         }
     
     # define the use case
@@ -98,3 +99,18 @@ def meteodate2dt(datestr):
     datestr = datestr.replace('T',' ').replace('Z','')
     date_and_time = dt.datetime.fromisoformat(datestr)
     return date_and_time
+
+def get_solar_irradiance(date):
+    '''
+    returns the estimated value of the solar irradiance on top of the atmosphere at a given date
+    :param date: date as timestamp, datetime.date or datetime.datetime 
+    '''
+    # set parameters
+    amp = 91/2824
+    freq = math.pi/6
+    v = math.pi/2-36/365
+    e=2733/2824
+    # get date variable
+    date = date.month+date.day*12/365
+    irradiance = (amp*math.sin(freq*date+v)+e)
+    return irradiance
