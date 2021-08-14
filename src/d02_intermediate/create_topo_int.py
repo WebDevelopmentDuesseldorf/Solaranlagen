@@ -108,12 +108,12 @@ def elevation_std(carpet_df):
     ele_std = np.std(elevation_list)
     return ele_std
 
-def southern_elevation(elevation_path, ns_stepsize):
+def maxgrad_inpath(elevation_path, stepsize):
     '''
     returns the highest gradient on elevation_path,
     probably solved inefficiently (use of dataframes)
-    :param elevation_path: elevation_path as returned by get_topo_data.elevation_path
-    :param ns_stepsize: distance between data points in meters
+    :param elevation_path: elevation_path as returned by get_topo_data.elevation_path or saved in ele_path_*_pickled
+    :param stepsize: distance between data points in meters
     '''
     # empty list to store gradient data
     grad_list = []
@@ -125,7 +125,7 @@ def southern_elevation(elevation_path, ns_stepsize):
         ele_diff = - compare_to + elevation_path[i]
         if ele_diff > 0:
             # calc gradient and save
-            grad = ele_diff/(ns_stepsize*i)
+            grad = ele_diff/(stepsize*i)
             grad_list.append([i,grad])
     # turn list into dataframe, use stepcount as index
     grad_df = pd.DataFrame.from_records(grad_list, columns=['index','gradient'])
@@ -136,9 +136,26 @@ def southern_elevation(elevation_path, ns_stepsize):
 
 def grads_to_alignment(ns_grad, ew_grad):
     '''
-    returns alignment relative to meridians based on north-south and east-west gradients
+    returns clockwise alignment relative to meridians based on north-south and east-west gradients, 0 degrees correspond to panel facing south
     :param ns_grad: gradient from south to north
     :param ew_grad: gradient from west to east
     '''
-    alignment = math.degrees(math.atan(ew_grad/ns_grad))
+    if ew_grad ==0:
+        if ns_grad < 0:
+            alignment=180
+        else:
+            alignment =0
+    elif ns_grad == 0:
+        if ew_grad > 0:
+            alignment=-90
+        else:
+            alignment=90
+    else:
+        alignment = math.degrees(math.acos((ns_grad/(ns_grad**2+ew_grad**2)**.5)))
+        if ew_grad > 0:
+            alignment = -alignment
     return alignment
+
+def shademinutes_by_elevations():
+    '''
+    returns approximated value for shaded minutes by elevations, based on '''
