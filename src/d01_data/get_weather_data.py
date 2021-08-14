@@ -6,6 +6,7 @@ import datetime as dt
 from os.path import dirname, abspath, normpath
 import os
 import math
+from math import radians, degrees, sin, cos, tan, asin, acos, atan
 
 
 # func: request weather data from API: get_weather_data
@@ -114,3 +115,44 @@ def get_solar_irradiance(date):
     date = date.month+date.day*12/365
     irradiance = (amp*math.sin(freq*date+v)+e)
     return irradiance
+
+def radiation_incidence_on_panel(
+        global_rad, 
+        global_direct_rad, 
+        global_diffuse_rad, 
+        solar_rad_toa, 
+        sunheight,
+        panel_tilt,
+        albedo,
+        angle_of_incidence):
+    '''
+    returns estimated value for the radiation on a PV panel
+    '''
+    # rename some vars fo better access
+    gd = global_diffuse_rad
+    gb = global_direct_rad
+    g = global_rad
+    gon = solar_rad_toa
+    beta = panel_tilt
+    phi = albedo
+    theta = angle_of_incidence
+
+    # compute zenith angle
+    theta_z = 90-sunheight
+    # compute extraterrestial horizontal radiation: g0
+    g0 = gon * cos(radians(theta_z))
+
+    # compute radtio of beam radiation on tilted surface to the beam radiation on horizontal surface: rb
+    rb = cos(radians(theta))/cos(radians(theta_z))
+    # compute anisotropy index (measure for amount of circumsolar diffuse radiation): ai
+    ai = gb/g0
+    # compute a factor for horizon brightening: f
+    f= (gb/g)**.5
+
+    # compute the global radiation incidence: gt
+    gt1 = (gb+gd*ai)*rb
+    gt2 = gd*(1-ai)*(.5+cos(radians(beta))/2)
+    gt3 = 1+f*sin(radians(beta/2))**3
+    gt4 = g*phi*(.5-cos(radians(beta))/2)
+    gt = gt1+gt2*gt3+gt4
+    return gt
