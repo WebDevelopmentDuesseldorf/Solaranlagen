@@ -73,14 +73,21 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
     :args *params: list with all parameters to request
     '''
     # create list with standard parameters: standard_params
-    standard_params = ['sunshine','clouds']
+    standard_params = ['global radiation','direct radiation','diffuse radiation','sunshine','clouds','temperature','snow depth', 'aerosols']
 
 
     # create dataframe for parameters, replace with loading the params_df.csv with all available parameters and use cases
     columns = ['parameter','unit','description']
     data = {
+        'global radiation':['global_rad','W','global radiation'],
+        'direct radiation':['direct_rad','W','direct radiation'],
+        'diffuse radiation':['diffuse_rad','W', 'diffuse radiation'],
         'sunshine':['sunshine_duration_1h','min','minutes of sunshine per hour'],
-        'clouds':['total_cloud_cover','p','relative cloud covered area of the sky']
+        'clouds':['total_cloud_cover','p','relative cloud covered area of the sky'],
+        'temperature':['t_2m','C','temperature 2m above ground'],
+        'wind speed':['wind_speed_10m','bft','wind speed in beaufort, 10m above ground'],
+        'snow depth':['snow_depth','mm','snow depth in mm'],
+        'aerosols':['total_aod_550nm','idx','percentage of light that is absorbed/reflected']
         }
     req_params_df = pd.DataFrame.from_dict(data=data, columns=columns, orient='index')
     
