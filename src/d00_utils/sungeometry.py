@@ -147,7 +147,8 @@ def sun_geo(lat=48.1,
     R = 1.02/math.tan(ri)
     # compute refracted sunheight: sunheight_ref
     sunheight_ref = sunheight + R/60
-    
+    # add 180 to azimut to get the correct value
+    azimut = azimut + 180
     # collect data in a dict
     sun_geo = {'azimut':azimut,'sunheight':sunheight,'sunheight refracted':sunheight_ref}
     return sun_geo
