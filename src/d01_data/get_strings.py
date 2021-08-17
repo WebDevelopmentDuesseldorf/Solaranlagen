@@ -1,4 +1,5 @@
 import datetime as dt
+import pickle
 import pandas as pd
 
 # func: create date string for requests to meteomatics API
@@ -73,7 +74,7 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
     :args *params: list with all parameters to request
     '''
     # create list with standard parameters: standard_params
-    standard_params = ['global radiation','direct radiation','diffuse radiation','sunshine','clouds','temperature','snow depth', 'aerosols']
+    standard_params = ['global radiation','direct radiation','diffuse radiation','sunshine','clouds','precipitation','temperature','snow depth', 'aerosols']
 
 
     # create dataframe for parameters, replace with loading the params_df.csv with all available parameters and use cases
@@ -84,6 +85,7 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
         'diffuse radiation':['diffuse_rad','W', 'diffuse radiation'],
         'sunshine':['sunshine_duration_1h','min','minutes of sunshine per hour'],
         'clouds':['total_cloud_cover','p','relative cloud covered area of the sky'],
+        'precipitation':['precip_1h','mm','precipitation in the last hour'],
         'temperature':['t_2m','C','temperature 2m above ground'],
         'wind speed':['wind_speed_10m','bft','wind speed in beaufort, 10m above ground'],
         'snow depth':['snow_depth','mm','snow depth in mm'],
@@ -107,3 +109,43 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
                 param_str += row['parameter']+':'+row['unit']+','
             param_str = param_str[:-1]
     return param_str
+
+def get_latlon_str(location,resolution,use='meteomatics'):
+    '''
+    returns the latlon string for the requested use case
+    :param location: description of the location (eg City name)
+    :param use: use case for the string, only meteomatics is implemented
+    '''
+    # load the location dict
+    path = '../references/location_dictionary.pkl'
+    with open(path,'rb') as f:
+        loc_dict = pickle.load(f)
+    # put info about location in variable: ld
+    ld = loc_dict[location]
+    # drop the polygon
+    ld.pop('polygon',None)
+    # compute the resolution part of the string 
+    # estimate the width and height of the area in degrees and km²: wd, hd, wk, hk
+    wd = ld['lon_max']-ld['lon_min']
+    wk = wd*71
+    hd = ld['lat_max']-ld['lat_min']
+    hk = hd*111
+    # compute the ratio between hk and wk
+    r = hk/wk
+    # compute the resolution of the area if it was a square
+    res_sq = resolution/r
+    # compute the number of data points per direction: wn, hn
+    wn = round(res_sq**.5)
+    hn = round(wn*r)
+    # combine the values: res_str
+    res_str = str(wn)+'x'+str(hn)
+    print(res_str)
+    # change type of all info to str    
+    keys_values = ld.items()
+    ld = {str(key): str(value) for key, value in keys_values}
+
+    # create constructor dict with instructions on how to create the latlon str: con_dict
+    con_dict={'meteomatics':ld['lat_max']+','+ld['lon_min']+'_'+ld['lat_min']+','+ld['lon_max']+':'+res_str}
+    # construct the latlon string for the use case
+    string = con_dict[use]
+    return string
