@@ -1,30 +1,55 @@
 import requests
 import pandas as pd
 from requests.api import get
-import d00_utils.get_strings as getstr
+import d01_data.get_strings as getstr
 import datetime as dt
 from os.path import dirname, abspath, normpath
 import os
 import math
+import pickle
 from math import radians, degrees, sin, cos, tan, asin, acos, atan
+from ast import literal_eval as make_tuple
+
+def getload_weather(process_id,source='meteomatics',location='thueringen', use_available=True,resolution=24):
+    '''
+    returns weather data in dataframe, defaults to loading locally saved data
+    :param location: which location/region to analyze. only small range of options available
+    :param source: which source to use for api requests. onyl meteomatics is implemented
+    :param use_available: if locally saved data can be used, defaults to True
+    :param process_id: the unique id for the data science process, used to find and save the correct files'''
+    # load or request raw weather data
+    # check if weather data for the current round exists
+    path = '../data/01_raw/weather_data_raw' +'_' + process_id +'.csv'
+    # error returned if weather_df is not set to a value before the if-else check
+    weather_df=1
+    if os.path.exists(path) and use_available:
+        print('available weather data will be loaded. change use_available or process_id to request new data')
+        # if weather data is available locally, load it
+        weather_df = pd.read_csv(path)
+        weather_df['date'] = pd.to_datetime(weather_df['date'], format="%Y-%m-%d %H:%M:%S.%f")
+        # turn id_tuple col into tuples
+        tups = weather_df['id_tuple']
+        tups = tups.apply(lambda x: make_tuple(x))
+        weather_df['id_tuple'] = tups
+    else:
+        print('weather data requested. pls stand by')
+        # if weather isn't available locally, request it from the api
+        weather_df = get_weather_data(source,location,resolution)
+        weather_df.reset_index(inplace=True,drop=True)
+        # also save it to reduce number of requests
+        weather_df.to_csv(path, index=False)
+    return weather_df
+
 
 
 # func: request weather data from API: get_weather_data
-def get_weather_data(source='meteomatics',location='thueringen'):
+def get_weather_data(source='meteomatics',location='thueringen',resolution=24):
     '''
     make request to a weather API, returns weather data in dataframe,
     df contains location, time, date and parameter with value
     :param source: which API to use, only meteomatics is supported
     :param location: which location to use, available locations will be saved in /references/loc_dict.json
     '''
-    
-    # load location dict with test locations, full fuctionality will be implemented later: loc_dict
-    loc_dict = {
-        'garmisch':'47.4938417,11.0829',
-        'thueringen':'51.6492842,9.8767193_50.2043467,12.6539178:6x4'
-        }
-    
-    # define the use case
     use = source
     
     # load authentication data
@@ -38,15 +63,15 @@ def get_weather_data(source='meteomatics',location='thueringen'):
         # get/set parts of the url
         date_str = getstr.get_datestr(use=use)
         param_str = getstr.get_paramstr(use=use)
-        latlong_str = loc_dict[location]
+        latlong_str = getstr.get_latlon_str(location,resolution,use)
         format_str = 'json?model=mix'
         # combine parts for full url: req_url
         req_url = 'https://'+auth+'@api.meteomatics.com'+'/'+date_str+'/'+param_str+'/'+latlong_str+'/'+format_str
+        print(req_url)
         # send the request
         res = requests.get(req_url)    
         # begin to format/unpack result and put into dataframe: packed_weather_data_df
         res_json = res.json()['data']
-
         #create dataframe from response (identified by location&parameter)
         packed_weather_data_df = pd.json_normalize(res_json,record_path=['coordinates'],meta=['parameter'])
 
@@ -115,44 +140,3 @@ def get_solar_irradiance(date):
     date = date.month+date.day*12/365
     irradiance = (amp*math.sin(freq*date+v)+e)
     return irradiance
-
-def radiation_incidence_on_panel(
-        global_rad, 
-        global_direct_rad, 
-        global_diffuse_rad, 
-        solar_rad_toa, 
-        sunheight,
-        panel_tilt,
-        albedo,
-        angle_of_incidence):
-    '''
-    returns estimated value for the radiation on a PV panel
-    '''
-    # rename some vars fo better access
-    gd = global_diffuse_rad
-    gb = global_direct_rad
-    g = global_rad
-    gon = solar_rad_toa
-    beta = panel_tilt
-    phi = albedo
-    theta = angle_of_incidence
-
-    # compute zenith angle
-    theta_z = 90-sunheight
-    # compute extraterrestial horizontal radiation: g0
-    g0 = gon * cos(radians(theta_z))
-
-    # compute radtio of beam radiation on tilted surface to the beam radiation on horizontal surface: rb
-    rb = cos(radians(theta))/cos(radians(theta_z))
-    # compute anisotropy index (measure for amount of circumsolar diffuse radiation): ai
-    ai = gb/g0
-    # compute a factor for horizon brightening: f
-    f= (gb/g)**.5
-
-    # compute the global radiation incidence: gt
-    gt1 = (gb+gd*ai)*rb
-    gt2 = gd*(1-ai)*(.5+cos(radians(beta))/2)
-    gt3 = 1+f*sin(radians(beta/2))**3
-    gt4 = g*phi*(.5-cos(radians(beta))/2)
-    gt = gt1+gt2*gt3+gt4
-    return gt
