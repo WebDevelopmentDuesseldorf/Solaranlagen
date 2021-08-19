@@ -138,5 +138,5 @@ def get_solar_irradiance(date):
     e=2733/2824
     # get date variable
     date = date.month+date.day*12/365
-    irradiance = (amp*math.sin(freq*date+v)+e)
+    irradiance = (amp*math.sin(freq*date+v)+e)*1420
     return irradiance
