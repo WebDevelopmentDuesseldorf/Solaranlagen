@@ -86,8 +86,8 @@ def carpet_characterics(carpet_res):
     ### step_n could also be calculated with coordinate extension & degree_delta
     # save elevation data points in carpet: carpet_data
     carpet_data = carpet_res.get('carpet')
-    ns_step_n = len(carpet_data)
-    ew_step_n = len(carpet_data[0])
+    ns_step_n = len(carpet_data)-1
+    ew_step_n = len(carpet_data[0])-1
     ns_stepsize = ns_extension/ns_step_n
     ew_stepsize = ew_extension/ew_step_n
     # approximate area in carpet with extensions
