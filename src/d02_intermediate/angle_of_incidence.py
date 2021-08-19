@@ -1,4 +1,4 @@
-from math import tan, asin, degrees, radians
+from math import tan, asin, degrees, radians, cos, sin, acos
 
 def inc_angle(azimut, sunheight_refracted, ns_grad, ew_grad):
     '''
@@ -8,8 +8,16 @@ def inc_angle(azimut, sunheight_refracted, ns_grad, ew_grad):
     :param ns_grad: north-south gradient of the panel, positive if the panel is facing south
     :param ew_grad: east-west gradient of the panel, positive if the panel is facing west 
     '''
-    sc = abs(ns_grad+ew_grad*(-tan(radians(azimut)))+tan(radians(sunheight_refracted)))
-    l1 = (ns_grad**2+ew_grad**2+1)**.5
-    l2= (1+(tan(radians(azimut)))**2+(tan(radians(sunheight_refracted)))**2)**.5
-    angle = asin(sc/(l1*l2))
+    # formula created based on the formula for angles between 3d vectors
+    # use some variables for easier formula construction
+    a = (radians(azimut+180))
+     
+    # construct the upper part
+    nn = ew_grad*sin(a) - ns_grad*cos(a)+tan(radians(sunheight_refracted))
+    # compute the length of the normal vector of the panel
+    npl = (ew_grad**2+ns_grad**2+1)**.5
+    # compute the length of the mirrored vector of the sun beam
+    nsl = ((sin(a))**2+(cos(a))**2+(tan(radians(sunheight_refracted)))**2)**.5
+    # compute the angle of incidence
+    angle = acos(nn/(npl*nsl))
     return degrees(angle)
