@@ -1,4 +1,6 @@
 import requests
+from os.path import exists
+import pickle
 
 def elevation_carpet(lat, lon):
     '''
@@ -6,22 +8,33 @@ def elevation_carpet(lat, lon):
     :param lat: latitude
     :param lon: longitude
     '''
-    # set degree delta for best resolution (found in airmaps documentation)
-    degree_delta = float(0.000277778)
-    # turn given vars into float
-    loc_lat = float(lat)
-    loc_lon = float(lon)
-    # set url bases
-    carpet_url_base = 'https://api.airmap.com/elevation/v1/ele/carpet?points='
-    # create corner points for surrounding area
-    SW_lat = str(loc_lat-degree_delta)
-    SW_lon = str(loc_lon-degree_delta)
-    NE_lat = str(loc_lat+degree_delta)
-    NE_lon = str(loc_lon+degree_delta)
-    # create URL for surrounding area: carpet_url
-    carpet_url = carpet_url_base + SW_lat+','+SW_lon+','+NE_lat+','+NE_lon
-    # requests carpet data, save as carpet_res
-    carpet_res = requests.get(carpet_url).json().get('data')
+    # check if the carpet was requested before
+    path = '../data/01_raw/carpets/'+str(lat)+'_'+str(lon)+'.pkl'
+    if exists(path):
+        # load the data if available locally
+        with open(path,'rb') as f:
+            carpet_res=pickle.load(f)
+    else:
+        # if no carpet is available, request a new one    
+        # set degree delta for best resolution (found in airmaps documentation)
+        degree_delta = float(0.000277778)
+        # turn given vars into float
+        loc_lat = float(lat)
+        loc_lon = float(lon)
+        # set url bases
+        carpet_url_base = 'https://api.airmap.com/elevation/v1/ele/carpet?points='
+        # create corner points for surrounding area
+        SW_lat = str(loc_lat-degree_delta)
+        SW_lon = str(loc_lon-degree_delta)
+        NE_lat = str(loc_lat+degree_delta)
+        NE_lon = str(loc_lon+degree_delta)
+        # create URL for surrounding area: carpet_url
+        carpet_url = carpet_url_base + SW_lat+','+SW_lon+','+NE_lat+','+NE_lon
+        # requests carpet data, save as carpet_res
+        carpet_res = requests.get(carpet_url).json().get('data')
+        # save the carpet
+        with open(path,'wb') as f:
+            pickle.dump(carpet_res,f)
     return carpet_res
 
 def elevation_path(lat, lon, direction):
