@@ -5,7 +5,11 @@ from numpy.core.numeric import NaN
 import pandas as pd
 import math
 from itertools import product
-from d03_processing.create_geometries import create_polygons
+from d07_visualisation.create_geometries import create_polygons
+import pickle
+import os
+import geopandas as gpd
+from geojson import Feature, Point, Polygon, MultiPolygon, FeatureCollection
 
 def locator(lat,lon,relevant_fields=['postcode','city','county','state']):
     '''
@@ -96,3 +100,53 @@ def get_address_grid(lat_min, lat_max,lon_min,lon_max,optimal_res=2000):
     # create a geometry column with polygons corresponding to the area around the location
     center_address_df = create_polygons(center_address_df, id_col='id_tuple')
     return center_address_df
+
+
+def get_reference_data(location,get_all=False,use_available=True,threshold=0.0):
+    '''
+    returns a dict with a reference shape and the outermost point in each compass direction
+    can return a list with dicts for each possible reference polygon
+    there definitely is a more efficient way to solve the reference loading part, did not figure it out yet
+    :param location: for which location to get the data
+    :param get_all: set if you want a list with all fitting polygons, should rarely be necessary
+    :param use_available: if True locally saved data will be accessed if possible
+    :param threshold: lowers the resolution of the returned reference polygon, values between 0.0 and 0.1 might yield fine results. probably not necessary so far 
+    '''
+    # replace spaces in the location
+    location = location.replace(' ',',')
+    # set the path to load/save data
+    path =  '../references/locations/'+location+'.pkl'
+    # check if there's geodata to reference
+    if os.path.exists(path):
+        # load reference data if available
+        with open(path,'rb') as f:
+            res = pickle.load(f)
+    else:
+        # request geodata and save it for future reference
+        url = 'https://nominatim.openstreetmap.org/search?q='+location+'&format=json&polygon_geojson=1&polygon_threshold'+str(threshold)
+        res = requests.get(url).json()[0].get('geojson')     
+        with open(path,'wb') as f:
+            pickle.dump(res,f)
+    # put the geo data in a gdf
+    myfeat = Feature(geometry=res,properties={'location':location})
+    col = FeatureCollection([myfeat])
+    location_reference_df = gpd.GeoDataFrame.from_features(col['features'])
+    # load the reference geometry
+    reference = location_reference_df.geometry.iloc[0]
+
+    # get the the border points of the smallest meridian aligned rectangle that contains the reference
+    bounds = reference.bounds
+    # reformat the bounds
+    lon_min = bounds[0]
+    lat_min =bounds[1]
+    lon_max =bounds[2]
+    lat_max =bounds[3]
+    
+    # roughly estimate the covered area, output a warning if below 1km²
+    area = (lat_max-lat_min)*111*(lon_max-lon_min)*71
+    if area <1:
+        print("WARNING! You're looking at a area of less than 1km². Expect problems!")
+
+    # create dict to return
+    info = {'polygon':reference, 'lon_min':lon_min,'lon_max':lon_max,'lat_min':lat_min,'lat_max':lat_max}
+    return info
