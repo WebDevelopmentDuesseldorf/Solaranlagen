@@ -74,7 +74,18 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
     :args *params: list with all parameters to request
     '''
     # create list with standard parameters: standard_params
-    standard_params = ['global radiation','direct radiation','diffuse radiation','sunshine','clouds','precipitation','temperature','snow depth', 'aerosols']
+    standard_params = [
+        'global radiation',
+        'direct radiation',
+        'diffuse radiation',
+        'sunshine',
+        'clouds',
+        'precipitation',
+        'temperature',
+        'wind speed',
+        'snow depth',
+        'aerosols']
+
 
 
     # create dataframe for parameters, replace with loading the params_df.csv with all available parameters and use cases
