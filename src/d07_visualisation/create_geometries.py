@@ -34,25 +34,45 @@ def create_polygons(df, id_in_tuple=True, id_col='index', name_for_col='geometry
             tuple_list = df[id_col]
         # create empty lists for lat and lon values
         lat_unique, lon_unique=[],[]
-        # iterate over ids to find unique lat and lon values
-        for tup in tuple_list:
-            if not tup[0] in lat_unique:
-                lat_unique.append(tup[0])
-            if not tup[1] in lon_unique:
-                lon_unique.append(tup[1])
+        # get sorted list with unique lat values
+        lats = list(
+            {
+                tup[0]
+                for tup
+                in df.index
+            })
+        # get sorted list with unique lon values
+        lons = list(
+            {
+                tup[1]
+                for tup
+                in df.index
+            })
     else:
         print('pls store id in tuples, other options arent available yet')
-    # sort the lists
-    lat_unique.sort()
-    lon_unique.sort()
     # compute distance between lat and lon points in degrees
-    ns_deg = lat_unique[1]-lat_unique[0]
-    ew_deg = lon_unique[1]-lon_unique[0]
+    ns_deg = lats[1]-lats[0]
+    ew_deg = lons[1]-lons[0]
     # create polygons
     df_with_polygons = df
-    print(df_with_polygons)
     if id_col == 'index':
-        df_with_polygons[name_for_col] = df_with_polygons.apply(lambda x: polygonize(x.name[0],x.name[1],ns_deg,ew_deg),axis=1)
+        df_with_polygons[name_for_col] = [
+            polygonize(
+                tup[0],
+                tup[1],
+                ns_deg,
+                ew_deg)
+            for tup
+            in df_with_polygons.index
+        ]
     else:
-        df_with_polygons[name_for_col] = df_with_polygons.apply(lambda x: polygonize(x[id_col][0],x[id_col][1],ns_deg,ew_deg),axis=1)
+        df_with_polygons[name_for_col] = [
+            polygonize(
+                tup[0],
+                tup[1],
+                ns_deg,
+                ew_deg)
+            for tup
+            in df_with_polygons[id_col]
+        ]
     return df_with_polygons
