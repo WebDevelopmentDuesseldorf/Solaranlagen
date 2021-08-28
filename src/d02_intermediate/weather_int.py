@@ -30,6 +30,7 @@ def est_snowdepth_panel(snow_depth, paneltilt=35):
         est =0
     return est
 
+
 def loss_by_snow(snow_depth):
     '''
     returns estimated loss of energy output by snow cover
@@ -41,6 +42,46 @@ def loss_by_snow(snow_depth):
         loss = snow_depth*.2
     return loss
 
+import numpy as np
+
+def time_since_rain(
+    index,
+    precipitation,
+    datetime_min,
+    datetime_current,
+    precipitation_for_cleaning = .3,
+    rain_reference = 0
+    ):
+    '''
+    returns time since last rain in hrs
+    '''
+    if precipitation >= precipitation_for_cleaning:
+        hrs = 0
+    elif datetime_min==datetime_current:
+        hrs = rain_reference
+    else:
+        hrs = np.nan
+    return hrs
+
+
+def compute_aod_mean(df,idx,aod_col='total_aod_550nm',hrs_col='hrs_since_rain'):
+    '''
+    returns mean aod value since the last significant precipitation'''
+    mean = (
+        # filter the relevant slice from just after the last precipitation to the current datetime
+        df.iloc[
+            # just after last rain
+            (idx - df.iloc[idx][hrs_col])+1
+            # to current datetime
+            :idx+1
+         ]
+        # look only at the col with aod data
+        [aod_col]
+         # compute the mean aod
+         .mean())
+    if not mean > 0:
+        mean = 0 
+    return mean
 
 
 import math
@@ -69,12 +110,12 @@ def est_soil_loss_value(tilt, hrs_since, aod_mean):
         # if it just rained, estimate a loss of 0%
         est = 0
 
-    return est
+    return est/100
 
 
 import math 
 
-def est_soiling_loss_data(tilt, dust_precip_df, dust_col, precip_col, date_col,hrs_reference=48):
+def est_soiling_loss_data(tilt, dust_precip_df, dust_col, precip_col, datetime_col,hrs_reference=48):
     '''
     //not fully implemented// returns dataframe with estimation for loss of output by dirt on the panel by the hour
     estimation is based on: (doi s41598-018-32291-8), (Dust effect on solar flat surfaces devices in Kuwait., 1985), (own estimations)
@@ -82,11 +123,11 @@ def est_soiling_loss_data(tilt, dust_precip_df, dust_col, precip_col, date_col,h
     :param dust_precip_df: dataframe with info about dust in the atmosphere (AOD) and precipitation, must include datetime
     :param dust_col: col name for dust data, can be a list
     :param precip_col: col name for precipitaiton data
-    :param date_col: col name for dates
+    :param date_col: col name for datetimes
     :param hrs_reference: estimated time since the last precipitation before the time covered by the df in hours
     '''
     # drop unnecessary cols, rename df for workflow: df
-    df = dust_precip_df[[date_col,precip_col,dust_col]]
+    df = dust_precip_df[[datetime_col,precip_col,dust_col]]
     # add new cols to dust_precip_df with reference values
     df['hrs_since_rain'] =-99
     df['aod_sum'] =0
