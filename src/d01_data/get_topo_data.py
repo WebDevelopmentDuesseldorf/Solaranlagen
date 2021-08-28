@@ -37,6 +37,24 @@ def elevation_carpet(lat, lon):
             pickle.dump(carpet_res,f)
     return carpet_res
 
+
+def carpet_url(lat,lon,degree_delta = float(0.000277778)):
+    '''
+    returns url string for requests to airmaps carpet api
+    '''
+    # turn given vars into float
+    loc_lat = float(lat)
+    loc_lon = float(lon)
+    # create corner points for surrounding area
+    SW_lat = str(loc_lat-degree_delta)
+    SW_lon = str(loc_lon-degree_delta)
+    NE_lat = str(loc_lat+degree_delta)
+    NE_lon = str(loc_lon+degree_delta)
+    # create URL for surrounding area: carpet_url
+    carpet_url = 'https://api.airmap.com/elevation/v1/ele/carpet?points=' + SW_lat+','+SW_lon+','+NE_lat+','+NE_lon
+    return carpet_url
+    
+
 def elevation_path(lat, lon, direction):
     '''
     returns list of elevation data in a straight line from lat, lon, distance between data points ~30m
