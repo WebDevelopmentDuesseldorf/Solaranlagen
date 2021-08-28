@@ -66,7 +66,7 @@ def ground_grad_ew(elevation_df, ew_stepsize):
     return grad_avg
 
 
-def carpet_characterics(carpet_res):
+def carpet_characteristics(carpet_res):
     '''
     returns dict with characteristics of an elevation carpet (area, expansion)
     :param carpet_res: result of carpet request to api
@@ -92,7 +92,18 @@ def carpet_characterics(carpet_res):
     ew_stepsize = ew_extension/ew_step_n
     # approximate area in carpet with extensions
     area = ns_extension*ew_extension
-    characteristics = {'area':area,'ns_extension':ns_extension,'ew_extension':ew_extension,'ns_stepsize':ns_stepsize,'ew_stepsize':ew_stepsize}
+
+    # turn carpet res into df
+    carpet_df = carpet2df(carpet_res)
+    characteristics = {'area':area,
+        'ns_extension':ns_extension,
+        'ew_extension':ew_extension,
+        'ns_stepsize':ns_stepsize,
+        'ew_stepsize':ew_stepsize,
+        'elevation_std':elevation_std(carpet_df),
+        'ns_gradient':ground_grad_ns(carpet_df,ns_stepsize),
+        'ew_gradient':ground_grad_ew(carpet_df,ew_stepsize)
+        }
     return characteristics
 
 def elevation_std(carpet_df):
