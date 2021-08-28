@@ -78,8 +78,6 @@ def get_paramstr(use='meteomatics',custom_params=False,*params):
         'global radiation',
         'direct radiation',
         'diffuse radiation',
-        'sunshine',
-        'clouds',
         'precipitation',
         'temperature',
         'wind speed',
