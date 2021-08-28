@@ -172,7 +172,7 @@ def sun_geo(lat=48.1,
 
 from math import tan, asin, degrees, radians, cos, sin, acos
 
-def inc_angle(azimut, sunheight_refracted, ns_grad, ew_grad):
+def inc_angle_by_gradients(azimut, sunheight_refracted, ns_grad, ew_grad):
     '''
     returns the effective angle of incidence of the sun rays relative to the solar panel in degrees
     :param azimut: azimut of the sun in degrees
@@ -192,4 +192,32 @@ def inc_angle(azimut, sunheight_refracted, ns_grad, ew_grad):
     nsl = ((sin(a))**2+(cos(a))**2+(tan(radians(sunheight_refracted)))**2)**.5
     # compute the angle of incidence
     angle = acos(nn/(npl*nsl))
+    return degrees(angle)
+
+def inc_angle_by_degrees(azimut,sunheight_refracted,tilt,alignment):
+    '''
+    returns the effective angle of incidence of the sun rays relative to the solar panel in degrees
+    :param azimut: azimut of the sun in degrees
+    :param sunheight_refracted: sunheight in degrees
+    :param tilt: tilt of the panel
+    :param alignment: alignment of the panel 
+    '''
+    # formula created based on the formula for angles between 3d vectors
+    # use some variables for easier formula construction
+    a = (radians(azimut+180))
+    s1 = sin(a)
+    s2 = cos(a)
+    s3 = tan(radians(sunheight_refracted))
+    
+    p1 = -sin(radians(alignment))*tan(radians(tilt))
+    p2 = -cos(radians(alignment))*tan(radians(tilt))
+    p3 = (cos(radians(alignment)))**2 + (sin(radians(alignment)))**2 
+     
+    # construct the upper part
+    upper = s1*p1+s2*p2+s3*p3
+    # construct the vector lengths
+    vl_sun = (s1**2 + s2**2 + s3**2)**.5
+    vl_panel = (p1**2 + p2**2 + p3**2)**.5
+    # compute the angle of incidence
+    angle = acos(upper/(vl_sun*vl_panel))
     return degrees(angle)
