@@ -54,6 +54,4 @@ def radiation_incidence_on_panel(
         gt = gt1+gt2*gt3+gt4
     else:
         gt=0
-    if gt <0:
-        print(theta,theta_z)
     return gt
