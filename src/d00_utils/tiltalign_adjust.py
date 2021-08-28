@@ -34,7 +34,7 @@ def align_options(night_consumption, morning_consumption, afternoon_consumption,
     cog = (night_consumption+2*morning_consumption+3*afternoon_consumption+4*evening_consumption)/(night_consumption+morning_consumption+evening_consumption+afternoon_consumption)
     # cog value can take values between 1 and 4, borders between phases correspond to 1.75, 2.5, 3.25
     # compute suggestions for the alignment
-    align_main_sug = (cog-2.5)*60
+    align_main_sug = round((cog-2.5)*60)
     align_sug_lower = align_main_sug -10
     align_sug_lowest = align_main_sug -20
     align_sug_higher = align_main_sug +10
