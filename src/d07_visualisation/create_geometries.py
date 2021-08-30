@@ -15,6 +15,8 @@ def polygonize(lat, lon, ns_deg, ew_deg):
     polygon = Polygon([UL,UR,LR,LL])
     return polygon
 
+from d07_visualisation.create_geometries import polygonize
+
 def create_polygons(df, id_in_tuple=True, id_col='index', name_for_col='geometry'):
     '''
     returns a dataframe with a polygon around each location, polygons will have the same size and border each other but not overlap
@@ -29,25 +31,24 @@ def create_polygons(df, id_in_tuple=True, id_col='index', name_for_col='geometry
     if id_in_tuple:
         # get the tuples in a list or series
         if id_col == 'index':
-            tuple_list = df.index
+            # get sorted list with unique lat values
+            lats = sorted(list(
+                {
+                    tup[0]
+                    for tup
+                    in df.index
+                }))
+            # get sorted list with unique lon values
+            lons = sorted(list(
+                {
+                    tup[1]
+                    for tup
+                    in df.index
+                }))
+
         else:
-            tuple_list = df[id_col]
-        # create empty lists for lat and lon values
-        lat_unique, lon_unique=[],[]
-        # get sorted list with unique lat values
-        lats = list(
-            {
-                tup[0]
-                for tup
-                in df.index
-            })
-        # get sorted list with unique lon values
-        lons = list(
-            {
-                tup[1]
-                for tup
-                in df.index
-            })
+            print('Please make sure the id is stored in the index')
+
     else:
         print('pls store id in tuples, other options arent available yet')
     # compute distance between lat and lon points in degrees
