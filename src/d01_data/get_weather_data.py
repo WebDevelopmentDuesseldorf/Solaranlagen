@@ -10,16 +10,18 @@ import pickle
 from math import radians, degrees, sin, cos, tan, asin, acos, atan
 from ast import literal_eval as make_tuple
 
-def getload_weather(process_id,source='meteomatics',location='thueringen', use_available=True,resolution=24):
+def getload_weather(process_id,source='meteomatics',location='thueringen', use_available=True,resolution=24,min_hrs=7):
     '''
-    returns weather data in dataframe, defaults to loading locally saved data
+    returns weather data in dataframe, defaults to loading locally saved data, drops incomplete days
     :param location: which location/region to analyze. only small range of options available
     :param source: which source to use for api requests. onyl meteomatics is implemented
     :param use_available: if locally saved data can be used, defaults to True
-    :param process_id: the unique id for the data science process, used to find and save the correct files'''
+    :param process_id: the unique id for the data science process, used to find and save the correct files
+    :param resolution: resolution of request, will be decreased by roughly 50%
+    :param min_hrs: minimum hours for a day to be included in analysis'''
     # load or request raw weather data
     # check if weather data for the current round exists
-    path = '../data/01_raw/weather_data_raw' +'_' + process_id +'.pqt'
+    path = '../data/01_raw/weather_' + process_id +'.pqt'
     # error returned if weather_df is not set to a value before the if-else check
     weather_df=1
     if os.path.exists(path) and use_available:
@@ -27,7 +29,20 @@ def getload_weather(process_id,source='meteomatics',location='thueringen', use_a
         # if weather data is available locally, load it
 
         weather_df = pd.read_parquet(path)
-        
+        # drop rows corresponding to incomplete days
+        # check if there's enough data to compute some half day values
+        if weather_df.date.iloc[-1].hour < min_hrs:
+            last_date = str(
+                weather_df
+                .date.iloc[-1]
+                .date()
+                - dt.timedelta(days=1))
+            weather_df = (
+                weather_df
+                .set_index('date')
+                .loc[:last_date]
+                .reset_index()
+            )
         
         weather_df['date'] = pd.to_datetime(weather_df['date'], format="%Y-%m-%d %H:%M:%S.%f")
         # turn id_tuple col into tuples
@@ -37,6 +52,23 @@ def getload_weather(process_id,source='meteomatics',location='thueringen', use_a
         # if weather isn't available locally, request it from the api
         weather_df = get_weather_data(source,location,resolution)
         weather_df.reset_index(inplace=True,drop=True)
+        
+        # drop rows corresponding to incomplete days
+        # check if there's enough data to compute some half day values
+        if weather_df.date.iloc[-1].hour < 7:
+            last_date = str(
+                weather_df
+                .date.iloc[-1]
+                .date()
+                - dt.timedelta(days=1))
+            weather_df = (
+                weather_df
+                .set_index('date')
+                .loc[:last_date]
+                .reset_index()
+            )
+            print('incomplete days dropped from weather data')
+
         # turn the id_tuple into a string
         # this is bad, but works for now
         weather_df.id_tuple = weather_df.id_tuple.astype('str')
