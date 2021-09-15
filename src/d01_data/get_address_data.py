@@ -150,3 +150,29 @@ def get_reference_data(location,get_all=False,use_available=True,threshold=0.0):
     # create dict to return
     info = {'polygon':reference, 'lon_min':lon_min,'lon_max':lon_max,'lat_min':lat_min,'lat_max':lat_max}
     return info
+
+def load_save_reference(location,force_update=False,create_new_save=False):
+    '''
+    returns reference polygon while adding the location data to the saved location reference dict
+    :param location: city, region, country
+    :param force_update: if True overwrites already saved reference
+    :param create_new_save: if True overwrites whole saved dictionary
+    '''
+    ref = get_reference_data(location)
+    # set the load/save path
+    path = '../references/location_dictionary.pkl'
+    # load the current dict if available
+    if os.path.exists(path) and not create_new_save:
+        with open(path,'rb') as f:
+            loc_dict=pickle.load(f)
+    else:
+        loc_dict = {}
+
+    # check if the location is already included in the dict
+    if (not location in loc_dict) or force_update:
+        # if the location is new, add the reference data
+        loc_dict[location] = ref
+        with open(path,'wb') as f:
+            pickle.dump(loc_dict,f) 
+    return ref['polygon']
+        
