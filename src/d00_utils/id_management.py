@@ -90,6 +90,9 @@ def updateblocks_idmanage_df(block_df, idmanage_df, id_col='id_tuple'):
     idmanage_df_updated.drop_duplicates(subset=id_col, keep='last', inplace=True)
     return idmanage_df_updated
 
+import shapely.geometry as sg
+from ast import literal_eval
+
 def geoblock_id(df, geo_col,reference, id_col, block_direction):
     '''
     returns dataframe with blocked ids
@@ -99,9 +102,30 @@ def geoblock_id(df, geo_col,reference, id_col, block_direction):
     :param id_col: column name of the id column
     :param block_direction: method to use for checking, only 'outside of' is supported
     '''
+    # if dtype of id_col is str, change it to tuple
+    if type(df[id_col][0]) == str:
+        print('tuple is in str')
+        df[id_col] = [
+            literal_eval(tup)
+            for tup in df[id_col]
+        ] 
+        print('now its a tuple')
+        # create geo col (which would not be created beforehand)
+        df[geo_col] = [
+            sg.Point(tup[1], tup[0])
+            for tup in df[id_col]
+        ]
+        print('geo created')
+
     if block_direction == 'outside of':
-        geoblock_df = df
+        geoblock_df = df.copy()
+        # this could be optimized with a list comprehension
         geoblock_df['blocked'] = geoblock_df.apply(lambda x: not reference.contains(x[geo_col]), axis=1)
+        print('geoblock done')
     else:
         print('other options for geoblocking arent implemented. pls update id_management.py')
     return geoblock_df
+
+# new func to be used for the dashboard
+# should work with a single df and save it after every update
+# should combine functionalities of (A) update_id_block_df, (B) updateblocks_idmanage_df, (C) id_allow_df
