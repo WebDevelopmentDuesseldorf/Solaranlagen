@@ -95,3 +95,88 @@ def elevation_point(lat, lon):
     # requests location data, save as loc_res
     loc_res = requests.get(loc_url).json().get('data')[0]
     return loc_res
+
+
+# make asynchronous requests
+
+# imports
+import aiohttp, asyncio, time
+from d02_intermediate.create_topo_int import carpet_characteristics
+import pandas as pd
+import os
+from ast import literal_eval
+
+
+# func to create tasks
+def get_tasks(session, ids_allowed):
+    '''creates a list of requests to be done in parallel'''
+    tasks = ([
+        session.get(url,ssl=False)
+        for url
+        # create list with urls corresponding to the locations
+        in [
+            carpet_url(id[0],id[1])
+            for id
+            in ids_allowed
+        ]
+    ])
+    return tasks
+
+# func to make asynchronous api requests
+async def get_carpets(ids_allowed):
+
+    async with aiohttp.ClientSession() as session:
+        tasks = get_tasks(session,ids_allowed)
+        responses = await asyncio.gather(*tasks)
+        results = [
+            await res.json()
+            for res
+            in responses
+        ]
+        resres = results
+        return results
+
+async def topo_main(ids_allowed,process_id):
+    # get or load topographical data
+    # check if the data is available locally
+    path = '../data/02_intermediate/topo_data_' + process_id +'.pqt'
+    print('Topographical data is being requested. Please stand by.')
+
+    # make asynchronous request to the airmaps elevation api for elevation carpets
+    import aiohttp, asyncio, time
+    from d02_intermediate.create_topo_int import carpet_characteristics
+    from d01_data.get_topo_data import carpet_url
+
+    # unpack the responses
+    s = time.perf_counter()
+    carpet_results = await get_carpets(ids_allowed)
+    characteristics = [
+        carpet_characteristics(carpet.get('data'))
+        for carpet
+        in carpet_results
+    ]
+    elapsed = time.perf_counter() - s
+    print(f"All API requests executed in {elapsed:0.2f} seconds.")
+
+    # create a dataframe with all the carpet data
+    topo_df = pd.DataFrame(ids_allowed.astype(str)).reset_index(drop=True)
+    topo_df.loc[:,'characteristics'] = characteristics
+    # create topo_df with all the topographical characteristics
+    topo_df = (
+        topo_df
+        .join(pd.json_normalize(topo_df.characteristics))
+    )
+    # only keep relevant data
+    topo_df = topo_df[['id_tuple','elevation_std','ns_gradient']]
+    # save the df
+    # change type of id_tuple col for saving
+    topo_df.id_tuple = topo_df.id_tuple.astype('str')
+    topo_df.to_parquet(path)
+
+
+def run_requests(ids_allowed,process_id):
+    '''
+    runs the main requests asynchronously
+    '''
+    asyncio.run(topo_main(ids_allowed,process_id))
+    return 'done'
