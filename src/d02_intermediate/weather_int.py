@@ -165,3 +165,38 @@ def est_soiling_loss_data(tilt, dust_precip_df, dust_col, precip_col, datetime_c
     df['soil loss pct'] = df.apply(lambda x: est_soil_loss_value(tilt,x['hrs_since_rain'],x['aod_mean'])/100,axis =1)
 
     return df
+
+
+import json
+import datetime as dt
+
+# helper function to prepare the last rain datetime col for an ffill
+def rain_prep(precip,datetime,dt_min,next=True):
+    '''
+    returns current datetime if raining or NaT else
+    :param precip: amount of precipitation in the last hour in mm
+    :param datetime: current datetime
+    :param dt_min: earliest available datetime
+    :param next: if True returns the next datetime with rain, if False returns the last datetime with rain'''
+    # load reference values from settings
+
+    # first load relevant settings
+    with open('../references/settings/dev_settings.json','r') as f:
+        settings = json.load(f)['losses']
+    # look up amount of needed precipitation for self cleaning to work
+    precipitation_for_cleaning = settings['self_clean_precip']
+    # look up standard value of hours since the last self cleaning
+    # standard value will be used if no data is available
+    rain_reference = settings['rain_reference']
+
+    if precip>=precipitation_for_cleaning:
+        # if self cleaning took effect in the last hour, return the current datetime
+        raintime = datetime
+    elif (not next) and (datetime==dt_min):
+        # if the last rain datetime is requested but the data is missing,
+        # estimate the time since based on the rain reference value from the settings
+        raintime = dt_min - dt.timedelta(hours=rain_reference)
+    else:
+        # return nan (this prepares ffills and bfills)
+        raintime = np.nan
+    return raintime
