@@ -1,7 +1,7 @@
 from math import pi, sin
 from datetime import datetime
 
-def consumption_by_date(date,winter_consumption,summer_consumption):
+def consumption_by_date(date,winter_consumption,summer_consumption,household_size):
     '''
     returns estimate for the total energy consumption of a day in kWh, based on consumption profile
     '''
@@ -14,7 +14,10 @@ def consumption_by_date(date,winter_consumption,summer_consumption):
     x = date.month + date.day/30
     a=pi/6
     b=pi/4
+    # compute the estimate for a household size of 3
     est = (w-s)/2*sin(a*x+b)+(w+s)/2
+    # account for household size
+    est = est * (.8*(household_size)+.85)/3.3
     return est/30
 
 def consumption_ampm(daily_total, early_indicator, late_indicator):
