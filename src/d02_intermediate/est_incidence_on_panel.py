@@ -24,7 +24,10 @@ def radiation_incidence_on_panel(
     if (global_rad >0):
         # rename some vars fo better access
         gd = diffuse_rad
-        gb = direct_rad
+        if sunheight>0:
+            gb = direct_rad
+        else:
+            gb=0
         g = global_rad
         gon = solar_rad_toa
         beta = panel_tilt
