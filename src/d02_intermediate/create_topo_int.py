@@ -39,7 +39,7 @@ def ground_grad_ns(elevation_df, ns_stepsize):
             ns_grad_df[ew_id][ns_id] = grad
     # calculate average ns-gradient around the location
     grad_avg = np.mean(ns_grad_df.values.tolist())
-    return grad_avg
+    return round(grad_avg,3)
 
 def ground_grad_ew(elevation_df, ew_stepsize):
     '''
@@ -63,7 +63,7 @@ def ground_grad_ew(elevation_df, ew_stepsize):
             ew_grad_df[ew_id][ns_id] = grad
     # calculate average ns-gradient around the location
     grad_avg = np.mean(ew_grad_df.values.tolist())
-    return grad_avg
+    return round(grad_avg,3)
 
 
 def carpet_characteristics(carpet_res):
