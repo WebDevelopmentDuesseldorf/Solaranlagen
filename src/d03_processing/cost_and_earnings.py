@@ -57,6 +57,7 @@ def optimized_df(
 def optimal_combination(
     weather_df,
     opt_index,
+    outpul_col,
     *join_dfs
 ):
     '''
@@ -71,7 +72,7 @@ def optimal_combination(
             weather_df
             .copy()
             .set_index(['id_tuple','tilt','alignment'])
-            .loc[opt_index,['date','pm','output_highvar']]
+            .loc[opt_index,['date','pm',outpul_col]]
             .groupby(['id_tuple','tilt','alignment','date','pm'])
             # get the sum of the highvar_output for each halfday with the optimal tilt-alignment combination
             .agg('sum')
