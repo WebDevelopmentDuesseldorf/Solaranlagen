@@ -90,7 +90,7 @@ def get_weather_data(source='meteomatics',location='thüringen',resolution=24):
     
     # load authentication data
     if use == 'meteomatics':
-        auth_path = 'C:/Users/sonny/Documents/Data Science/TechLabs Project/conf/base/meteomatics_auth.txt'
+        auth_path = 'C:/Users/Techie/Documents/soenke/Solaranlagen/conf/base/meteomatics_auth.txt'
         with open(auth_path, 'r') as f:
             auth = f.read()
 
