@@ -5,9 +5,12 @@ import Home from './components/pages/Home'
 import Overview from './components/pages/Overview'
 import About from './components/pages/About'
 
+import Navbar from './components/inc/Navbar'
+
 function App() {
   return (
     <Router>
+      <Navbar />
       <Switch>
         <Route path="/" component={Home} exact={true}/>
         <Route path="/overview" component={Overview} />
