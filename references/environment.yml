@@ -269,4 +269,4 @@ dependencies:
     - dash-extensions==0.0.60
     - flask-caching==1.10.1
     - more-itertools==8.8.0
-prefix: G:\Anaconda\envs\mapenv
+prefix: C:\Users\Techie\anaconda3\envs\mapenv

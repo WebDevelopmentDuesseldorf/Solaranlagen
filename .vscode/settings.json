@@ -1,0 +1,13 @@
+{
+    "[python]": {
+
+        "gitlens.codeLens.symbolScopes": [
+            "!Module"
+        ],
+        "editor.wordBasedSuggestions": false,
+        
+    },
+    "python.pythonPath": "C:\\Users\\Techie\\anaconda3\\python.exe",
+    "python.defaultInterpreterPath": "C:\\Users\\Techie\\anaconda3\\python.exe",
+    "python.condaPath": "C:\\Users\\Techie\\anaconda3\\_conda.exe"
+}
