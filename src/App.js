@@ -6,6 +6,7 @@ import Overview from './components/pages/Overview'
 import About from './components/pages/About'
 
 import Navbar from './components/inc/Navbar'
+import Footer from './components/inc/Footer'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/overview" component={Overview} />
         <Route path="/about" component={About} />
       </Switch>
+      <Footer />
     </Router>
   );
 }
