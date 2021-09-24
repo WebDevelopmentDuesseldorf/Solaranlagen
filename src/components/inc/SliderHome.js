@@ -2,12 +2,25 @@ import React from 'react';
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, {
-    EffectCoverflow,Pagination
+    EffectCoverflow,Pagination,Navigation
   } from 'swiper';
 
-import 'swiper/swiper.scss'
 
-SwiperCore.use([EffectCoverflow,Pagination]);
+import 'swiper/swiper.scss'
+import '../styles/swiper.css'
+import "swiper/components/effect-coverflow/effect-coverflow.min.css"
+import "swiper/components/pagination/pagination.min.css"
+import "swiper/components/navigation/navigation.min.css"
+
+import bochum_res_200 from '../images/test_bochum_res_200.png'
+import dortmund_res_200 from '../images/test_dortmund_res_200.png'
+import duesseldorf_res_200 from '../images/test_duesseldorf_res_200.png'
+import duisburg_res_200 from '../images/test_duisburg_res_200.png'
+import essen_res_200 from '../images/test_essen_res_200.png'
+import koeln_res_200 from '../images/test_koeln_res_200.png'
+
+
+SwiperCore.use([EffectCoverflow,Pagination,Navigation]);
 
 function SliderHome() {
     return (
@@ -25,34 +38,26 @@ function SliderHome() {
             slideShadows: true
           }}
           pagination={true}
+          navigation={true}
           className="mySwiper"
         >
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-1.jpg" />
+            <img src={bochum_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Bochum"/>
           </SwiperSlide>
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-2.jpg" />
+            <img src={dortmund_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Dortmund"/>
           </SwiperSlide>
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-3.jpg" />
+            <img src={duesseldorf_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Duesseldorf"/>
           </SwiperSlide>
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-4.jpg" />
+            <img src={duisburg_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Duisburg"/>
           </SwiperSlide>
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-5.jpg" />
+            <img src={essen_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Essen"/>
           </SwiperSlide>
           <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-6.jpg" />
-          </SwiperSlide>
-          <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-7.jpg" />
-          </SwiperSlide>
-          <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-8.jpg" />
-          </SwiperSlide>
-          <SwiperSlide>
-            <img src="https://swiperjs.com/demos/images/nature-9.jpg" />
+            <img src={koeln_res_200} alt="Map Overview which shows the efficiency of solarpanel in the region Koeln"/>
           </SwiperSlide>
         </Swiper>
       </>

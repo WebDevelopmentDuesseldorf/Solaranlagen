@@ -8,7 +8,7 @@ class Home extends React.Component{
             <div>
                 <h2>Home Page</h2>
                 <SliderHome />
-                <button class="btn btn-primary">Bootstrap Button Sample</button>
+                <button className="btn btn-primary">Bootstrap Button Sample</button>
             </div>
         );
     }
