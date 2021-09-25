@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 function Footer(){ 
     return (
-        <footer className="py-5 text-white">
+        <footer className="py-5 ">
             <div className="container">
                 <div className="row">
                     <div className="col-md-4">
@@ -18,7 +18,7 @@ function Footer(){
                     <div className="col-md-4">
                         <h6>Quick Links</h6>
                         <hr />
-                        <div><Link to="/" className="text-decoration-none"> Home</Link></div>
+                        <div><Link to="/home" className="text-decoration-none"> Home</Link></div>
                         <div><Link to="/overview" className="text-decoration-none"> Overview</Link></div>
                         <div><Link to="/about" className="text-decoration-none"> About</Link></div>
                     </div>

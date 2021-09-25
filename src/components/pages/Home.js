@@ -1,7 +1,7 @@
 import React from 'react';
 import SliderHome from '../inc/SliderHome'
 import Functions from './modules/Functions'
-
+import Footer from '../inc/Footer'
 
 class Home extends React.Component {
     render() {
@@ -82,7 +82,7 @@ class Home extends React.Component {
                             </div>
                         </div>
                     </section>
-
+                    <Footer />
 
                     
                     

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+
 .App {
   text-align: center;
 }
@@ -37,6 +39,12 @@
   }
 }
 
+body,
+button {
+  font-family: "Poppins", sans-serif;
+  
+}
+
 .underline{ 
   height: 3px;
   width: 5rem;
@@ -57,5 +65,38 @@
 
 footer{
   background-color: #323031;
+  color: #d0d0d0;
+  margin-top:auto; 
 }
 
+nav{
+  background-color: #22577A;
+}
+
+nav ul.dropdown{
+  background-color: #22577A;
+}
+
+a.dropdown-item{
+  color: #9bb3c3;
+}
+
+#googleMapsContact{ 
+  border: 0;
+}
+
+.button{
+  background-color: #22577a !important;
+}
+
+.navbar-brand{ 
+  text-transform: uppercase;
+  font-weight: 600;
+ 
+  letter-spacing: 2px;
+}
+
+.navbar-brand span{
+ 
+    font-weight: 300;
+}
